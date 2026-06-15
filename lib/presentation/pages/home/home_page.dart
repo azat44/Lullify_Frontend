@@ -25,7 +25,7 @@ class HomePage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.radio_rounded, size: 64, color: AppColors.lavender.withValues(alpha: 0.5)),
+                      Icon(Icons.radio_rounded, size: 64, color: AppColors.violet.withValues(alpha: 0.5)),
                       const SizedBox(height: 16),
                       Text('No live streams yet', style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),

@@ -13,7 +13,7 @@ class LibraryPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.library_music_rounded, size: 64, color: AppColors.softPink.withValues(alpha: 0.5)),
+            Icon(Icons.library_music_rounded, size: 64, color: AppColors.neonPink.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             Text('Your library', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),

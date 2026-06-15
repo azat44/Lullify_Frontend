@@ -13,7 +13,7 @@ class ExplorePage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.explore_rounded, size: 64, color: AppColors.mintGreen.withValues(alpha: 0.5)),
+            Icon(Icons.explore_rounded, size: 64, color: AppColors.skyBlue.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             Text('Explore streams', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),

@@ -13,7 +13,7 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.person_rounded, size: 64, color: AppColors.warmYellow.withValues(alpha: 0.5)),
+            Icon(Icons.person_rounded, size: 64, color: AppColors.neonCyan.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             Text('Not logged in', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),

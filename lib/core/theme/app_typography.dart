@@ -1,77 +1,67 @@
 import 'package:flutter/material.dart';
-import 'package:lullify_mobile/core/theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'app_colors.dart';
 
 class AppTypography {
   AppTypography._();
 
-  static const String _fontFamily = 'Quicksand';
-
+  // Quicksand pour le corps — lisible et doux
+  // VT323 pour les titres display — pixel art / vaporwave
   static TextTheme get textTheme {
-    return const TextTheme(
-      displayLarge: TextStyle(
-        fontFamily: _fontFamily,
-        fontSize: 32,
+    return TextTheme(
+      displayLarge: GoogleFonts.vt323(
+        fontSize: 48,
+        fontWeight: FontWeight.w400,
+        color: AppColors.textPrimary,
+        letterSpacing: 2,
+      ),
+      displayMedium: GoogleFonts.vt323(
+        fontSize: 36,
+        fontWeight: FontWeight.w400,
+        color: AppColors.textPrimary,
+        letterSpacing: 1.5,
+      ),
+      headlineLarge: GoogleFonts.quicksand(
+        fontSize: 24,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
-        letterSpacing: -0.5,
       ),
-      displayMedium: TextStyle(
-        fontFamily: _fontFamily,
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
-        letterSpacing: -0.5,
-      ),
-      headlineLarge: TextStyle(
-        fontFamily: _fontFamily,
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
-      ),
-      headlineMedium: TextStyle(
-        fontFamily: _fontFamily,
+      headlineMedium: GoogleFonts.quicksand(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
-      titleLarge: TextStyle(
-        fontFamily: _fontFamily,
+      titleLarge: GoogleFonts.quicksand(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
-      titleMedium: TextStyle(
-        fontFamily: _fontFamily,
+      titleMedium: GoogleFonts.quicksand(
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
       ),
-      bodyLarge: TextStyle(
-        fontFamily: _fontFamily,
+      bodyLarge: GoogleFonts.quicksand(
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
       ),
-      bodyMedium: TextStyle(
-        fontFamily: _fontFamily,
+      bodyMedium: GoogleFonts.quicksand(
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: AppColors.textSecondary,
       ),
-      bodySmall: TextStyle(
-        fontFamily: _fontFamily,
+      bodySmall: GoogleFonts.quicksand(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: AppColors.textMuted,
       ),
-      labelLarge: TextStyle(
-        fontFamily: _fontFamily,
+      labelLarge: GoogleFonts.quicksand(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
-      labelMedium: TextStyle(
-        fontFamily: _fontFamily,
+      labelMedium: GoogleFonts.quicksand(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: AppColors.textSecondary,
