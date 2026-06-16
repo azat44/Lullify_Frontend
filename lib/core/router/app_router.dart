@@ -4,6 +4,7 @@ import 'package:lullify_mobile/presentation/pages/home/home_page.dart';
 import 'package:lullify_mobile/presentation/pages/explore/explore_page.dart';
 import 'package:lullify_mobile/presentation/pages/library/library_page.dart';
 import 'package:lullify_mobile/presentation/pages/profile/profile_page.dart';
+import 'package:lullify_mobile/presentation/pages/splash/splash_page.dart';
 import 'package:lullify_mobile/presentation/widgets/main_shell.dart';
 
 class AppRoutes {
@@ -12,11 +13,13 @@ class AppRoutes {
   static const String explore = '/explore';
   static const String library = '/library';
   static const String profile = '/profile';
+  static const String splash = '/splash';
+
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.home,
+    initialLocation: AppRoutes.splash,
     routes: [
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
@@ -36,6 +39,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.profile,
             pageBuilder: (context, state) => const NoTransitionPage(child: ProfilePage()),
+          ),
+          GoRoute(
+            path: AppRoutes.splash,
+            pageBuilder: (context, state) => const NoTransitionPage(child: SplashPage()),
           ),
         ],
       ),
