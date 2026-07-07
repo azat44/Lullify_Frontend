@@ -9,7 +9,7 @@ class AppColors {
   static const Color surface      = Color(0xFF120F30);
   static const Color surfaceLight = Color(0xFF1C1840);
 
-  // ── Palette vaporwave (ta GPL) ─────────────────────────
+  // ── Palette vaporwave ──────────────────────────────────
   static const Color neonPink     = Color(0xFFFF8AC8);
   static const Color hotPink      = Color(0xFFFF5FB8);
   static const Color pink         = Color(0xFFFF3AA8);
