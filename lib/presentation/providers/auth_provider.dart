@@ -1,16 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lullify_mobile/core/network/dio_client.dart';
 import 'package:lullify_mobile/data/datasources/auth_remote_datasource.dart';
 import 'package:lullify_mobile/data/repositories/auth_repository_impl.dart';
 import 'package:lullify_mobile/domain/entities/user.dart';
 import 'package:lullify_mobile/domain/repositories/auth_repository.dart';
 
-final secureStorageProvider = Provider<FlutterSecureStorage>(
-      (_) => const FlutterSecureStorage(),
-);
-
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>(
-      (_) => AuthRemoteDataSource(),
+  (ref) => AuthRemoteDataSource(dio: ref.read(dioProvider)),
 );
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -86,6 +82,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } finally {
       state = const AuthLoggedOut();
     }
+  }
+
+  void sessionExpired() {
+    state = const AuthLoggedOut();
   }
 
   String _parseError(Object e) {

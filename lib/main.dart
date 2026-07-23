@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lullify_mobile/core/app.dart';
+import 'package:lullify_mobile/core/network/dio_client.dart';
+import 'package:lullify_mobile/presentation/providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,8 +24,13 @@ void main() async {
   ]);
 
   runApp(
-    const ProviderScope(
-      child: LullifyApp(),
+    ProviderScope(
+      overrides: [
+        onSessionExpiredProvider.overrideWith((ref) {
+          return () => ref.read(authProvider.notifier).sessionExpired();
+        }),
+      ],
+      child: const LullifyApp(),
     ),
   );
 }
