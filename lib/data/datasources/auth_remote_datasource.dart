@@ -1,14 +1,10 @@
+// lib/data/datasources/auth_remote_datasource.dart
+
 import 'package:dio/dio.dart';
-import 'package:lullify_mobile/core/constants.dart';
 import 'package:lullify_mobile/data/models/user_model.dart';
 
 class AuthRemoteDataSource {
-  AuthRemoteDataSource() : _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.apiBaseUrl,
-    connectTimeout: AppConstants.apiTimeout,
-    receiveTimeout: AppConstants.apiTimeout,
-    headers: {'Content-Type': 'application/json'},
-  ));
+  AuthRemoteDataSource({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
 
@@ -48,13 +44,5 @@ class AuthRemoteDataSource {
 
   Future<void> logout() async {
     await _dio.post('/auth/logout');
-  }
-
-  Future<String?> refreshToken(String refreshToken) async {
-    final response = await _dio.post('/auth/refresh', data: {
-      'refresh_token': refreshToken,
-    });
-    final data = response.data as Map<String, dynamic>;
-    return data['access_token'] as String?;
   }
 }

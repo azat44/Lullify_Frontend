@@ -63,20 +63,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<String?> refreshToken() async {
-    final token = await _storage.read(key: AppConstants.refreshTokenKey);
-    if (token == null) return null;
-    final newToken = await _remote.refreshToken(token);
-    if (newToken != null) {
-      await _storage.write(
-        key: AppConstants.accessTokenKey,
-        value: newToken,
-      );
-    }
-    return newToken;
-  }
-
-  @override
   Future<User?> getCurrentUser() async {
     final token = await _storage.read(key: AppConstants.accessTokenKey);
     if (token == null) return null;
