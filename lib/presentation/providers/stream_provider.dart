@@ -38,9 +38,7 @@ class StreamListNotifier extends StateNotifier<StreamListState> {
   Future<void> loadStreams() async {
     state = const StreamListLoading();
     try {
-      // TODO: remplacer par _repository.getActiveStreams() quand le backend sera prêt
-      await Future.delayed(const Duration(milliseconds: 800));
-      final streams = _mockStreams();
+      final streams = await _repository.getActiveStreams();
       state = StreamListLoaded(streams);
     } catch (e) {
       state = const StreamListError('Failed to load streams');
@@ -48,39 +46,6 @@ class StreamListNotifier extends StateNotifier<StreamListState> {
   }
 
   Future<void> refresh() => loadStreams();
-
-  List<AudioStream> _mockStreams() {
-    return [
-      AudioStream(
-        id: '1',
-        ownerId: 'user-1',
-        title: 'Chill Lofi Beats',
-        description: 'Study & relax vibes',
-        mountPoint: '/stream/chill',
-        status: StreamStatus.live,
-        listenerCount: 42,
-        startedAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-      AudioStream(
-        id: '2',
-        ownerId: 'user-2',
-        title: 'Vaporwave Dreams',
-        description: '80s aesthetic radio',
-        mountPoint: '/stream/vapor',
-        status: StreamStatus.live,
-        listenerCount: 128,
-        startedAt: DateTime.now().subtract(const Duration(minutes: 30)),
-      ),
-      AudioStream(
-        id: '3',
-        ownerId: 'user-3',
-        title: 'Late Night Study',
-        description: 'Focus and deep work',
-        mountPoint: '/stream/study',
-        status: StreamStatus.offline,
-      ),
-    ];
-  }
 }
 
 final streamListProvider =
