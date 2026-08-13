@@ -4,6 +4,7 @@ import 'package:lullify_mobile/core/theme/app_colors.dart';
 import 'package:lullify_mobile/presentation/providers/stream_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/lullify_app_bar.dart';
 import 'package:lullify_mobile/presentation/widgets/stream_card.dart';
+import 'package:lullify_mobile/presentation/pages/player/player_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -45,8 +46,13 @@ class HomePage extends ConsumerWidget {
         final stream = streams[index];
         return StreamCard(
           stream: stream,
-          onTap: stream.isLive ? () {} : null,
-        );
+          onTap: stream.isLive
+              ? () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => PlayerPage(stream: stream),
+            ),
+          )
+              : null,        );
       },
     );
   }
