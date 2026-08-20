@@ -12,7 +12,8 @@ class MainShell extends StatelessWidget {
     final location = GoRouterState.of(context).uri.path;
     if (location.startsWith(AppRoutes.explore)) return 1;
     if (location.startsWith(AppRoutes.library)) return 2;
-    if (location.startsWith(AppRoutes.profile)) return 3;
+    if (location.startsWith(AppRoutes.broadcaster)) return 3;
+    if (location.startsWith(AppRoutes.profile)) return 4;
     return 0;
   }
 
@@ -21,7 +22,8 @@ class MainShell extends StatelessWidget {
       case 0: context.go(AppRoutes.home);
       case 1: context.go(AppRoutes.explore);
       case 2: context.go(AppRoutes.library);
-      case 3: context.go(AppRoutes.profile);
+      case 3: context.go(AppRoutes.broadcaster);
+      case 4: context.go(AppRoutes.profile);
     }
   }
 
@@ -52,6 +54,7 @@ class _VaporwaveNavBar extends StatelessWidget {
     _NavItem(icon: Icons.home_rounded, outlinedIcon: Icons.home_outlined, label: 'Home'),
     _NavItem(icon: Icons.explore_rounded, outlinedIcon: Icons.explore_outlined, label: 'Explore'),
     _NavItem(icon: Icons.library_music_rounded, outlinedIcon: Icons.library_music_outlined, label: 'Library'),
+    _NavItem(icon: Icons.radio_rounded, outlinedIcon: Icons.radio_outlined, label: 'Broadcast'),
     _NavItem(icon: Icons.person_rounded, outlinedIcon: Icons.person_outline_rounded, label: 'Profile'),
   ];
 
