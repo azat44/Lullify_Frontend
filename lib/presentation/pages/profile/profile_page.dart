@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lullify_mobile/core/router/app_router.dart';
 import 'package:lullify_mobile/core/theme/app_colors.dart';
 import 'package:lullify_mobile/presentation/widgets/lullify_app_bar.dart';
 
@@ -19,6 +21,13 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Sign in to access your profile and settings',
                 style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            // Bouton temporaire pour tester l'espace diffuseur.
+            ElevatedButton.icon(
+              onPressed: () => context.go(AppRoutes.broadcaster),
+              icon: const Icon(Icons.podcasts_rounded),
+              label: const Text('Espace diffuseur'),
+            ),
           ],
         ),
       ),
