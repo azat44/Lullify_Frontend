@@ -10,7 +10,7 @@ import 'package:lullify_mobile/presentation/pages/profile/profile_page.dart';
 import 'package:lullify_mobile/presentation/pages/splash/splash_page.dart';
 import 'package:lullify_mobile/presentation/providers/auth_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/main_shell.dart';
-import 'package:lullify_mobile/presentation/pages/broadcaster/broadcaster_page.dart';
+import 'package:lullify_mobile/presentation/pages/broadcaster/broadcaster_dashboard_page.dart';
 
 
 class AppRoutes {
@@ -98,7 +98,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.broadcaster,
             pageBuilder: (context, state) =>
-            const NoTransitionPage(child: BroadcasterPage()),
+            const NoTransitionPage(child: BroadcasterDashboardPage()),
           ),
         ],
       ),
