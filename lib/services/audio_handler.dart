@@ -20,10 +20,10 @@ class LullifyAudioHandler extends BaseAudioHandler with SeekHandler {
         systemActions: const {MediaAction.seek},
         androidCompactActionIndices: const [0],
         processingState: switch (_player.processingState) {
-          ProcessingState.idle     => AudioProcessingState.idle,
-          ProcessingState.loading  => AudioProcessingState.loading,
+          ProcessingState.idle      => AudioProcessingState.idle,
+          ProcessingState.loading   => AudioProcessingState.loading,
           ProcessingState.buffering => AudioProcessingState.buffering,
-          ProcessingState.ready    => AudioProcessingState.ready,
+          ProcessingState.ready     => AudioProcessingState.ready,
           ProcessingState.completed => AudioProcessingState.completed,
         },
         playing: playing,
@@ -40,7 +40,6 @@ class LullifyAudioHandler extends BaseAudioHandler with SeekHandler {
     required String title,
     required String artist,
   }) async {
-    // Met à jour les métadonnées affichées sur le lockscreen
     mediaItem.add(MediaItem(
       id: url,
       title: title,
@@ -75,5 +74,23 @@ class LullifyAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> onTaskRemoved() async {
     await stop();
     await super.onTaskRemoved();
+  }
+
+  @override
+  Future<void> onAudioFocusLost() async {
+    // Appel entrant, autre app audio — on pause proprement
+    await pause();
+  }
+
+  @override
+  Future<void> onAudioFocusGained() async {
+    // Focus audio récupéré — on reprend
+    await play();
+  }
+
+  @override
+  Future<void> onAudioBecomingNoisy() async {
+    // Écouteurs débranchés — on pause (comportement standard Android)
+    await pause();
   }
 }
