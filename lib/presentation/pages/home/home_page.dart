@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lullify_mobile/core/router/app_router.dart';
 import 'package:lullify_mobile/core/theme/app_colors.dart';
 import 'package:lullify_mobile/presentation/providers/stream_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/lullify_app_bar.dart';
@@ -14,7 +16,16 @@ class HomePage extends ConsumerWidget {
     final streamState = ref.watch(streamListProvider);
 
     return Scaffold(
-      appBar: const LullifyAppBar(title: 'Lullify'),
+      appBar: LullifyAppBar(
+        title: 'Lullify',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'Listening history',
+            onPressed: () => context.push(AppRoutes.history),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(streamListProvider.notifier).refresh(),
         color: AppColors.violet,

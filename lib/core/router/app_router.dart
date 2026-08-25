@@ -11,6 +11,7 @@ import 'package:lullify_mobile/presentation/pages/splash/splash_page.dart';
 import 'package:lullify_mobile/presentation/providers/auth_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/main_shell.dart';
 import 'package:lullify_mobile/presentation/pages/broadcaster/broadcaster_dashboard_page.dart';
+import 'package:lullify_mobile/presentation/pages/history/listening_history_page.dart';
 
 
 class AppRoutes {
@@ -23,6 +24,7 @@ class AppRoutes {
   static const String library  = '/library';
   static const String profile  = '/profile';
   static const String broadcaster = '/broadcaster';
+  static const String history  = '/history';
 
 }
 
@@ -71,6 +73,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.register,
         pageBuilder: (context, state) =>
         const NoTransitionPage(child: RegisterPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.history,
+        pageBuilder: (context, state) =>
+        const MaterialPage(child: ListeningHistoryPage()),
       ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
