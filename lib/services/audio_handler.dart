@@ -75,22 +75,4 @@ class LullifyAudioHandler extends BaseAudioHandler with SeekHandler {
     await stop();
     await super.onTaskRemoved();
   }
-
-  @override
-  Future<void> onAudioFocusLost() async {
-    // Appel entrant, autre app audio — on pause proprement
-    await pause();
-  }
-
-  @override
-  Future<void> onAudioFocusGained() async {
-    // Focus audio récupéré — on reprend
-    await play();
-  }
-
-  @override
-  Future<void> onAudioBecomingNoisy() async {
-    // Écouteurs débranchés — on pause (comportement standard Android)
-    await pause();
-  }
 }
