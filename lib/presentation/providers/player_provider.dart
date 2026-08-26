@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:lullify_mobile/main.dart';
+import 'package:lullify_mobile/services/audio_handler.dart';
+import 'package:flutter/foundation.dart';
 
 sealed class PlayerState {
   const PlayerState();
@@ -33,15 +35,20 @@ class PlayerError extends PlayerState {
 }
 
 class PlayerNotifier extends StateNotifier<PlayerState> {
-  PlayerNotifier() : super(const PlayerIdle()) {
+  // Le handler est injecté pour permettre un fake dans les tests widget.
+  PlayerNotifier({required LullifyAudioHandler handler})
+      : _handler = handler,
+        super(const PlayerIdle()) {
     _listenToHandler();
   }
+
+  final LullifyAudioHandler _handler;
 
   String? _currentStreamId;
   String? _currentStreamTitle;
 
   void _listenToHandler() {
-    audioHandler.player.playerStateStream.listen((ps) {
+    _handler.player.playerStateStream.listen((ps) {
       if (!mounted) return;
 
       if (ps.processingState == ProcessingState.loading ||
@@ -51,8 +58,8 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
         state = PlayerPlaying(
           streamId: _currentStreamId ?? '',
           streamTitle: _currentStreamTitle ?? '',
-          position: audioHandler.player.position,
-          volume: audioHandler.player.volume,
+          position: _handler.player.position,
+          volume: _handler.player.volume,
         );
       } else if (ps.processingState == ProcessingState.ready && !ps.playing) {
         if (_currentStreamId != null) {
@@ -65,7 +72,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     });
 
     // Mise à jour de la progression
-    audioHandler.player.positionStream.listen((position) {
+    _handler.player.positionStream.listen((position) {
       if (!mounted) return;
       if (state is PlayerPlaying) {
         final current = state as PlayerPlaying;
@@ -89,7 +96,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       _currentStreamId = streamId;
       _currentStreamTitle = streamTitle;
 
-      await audioHandler.playHls(
+      await _handler.playHls(
         url: hlsUrl,
         title: streamTitle,
         artist: 'Lullify Radio',
@@ -99,18 +106,18 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     }
   }
 
-  Future<void> pause() => audioHandler.pause();
-  Future<void> resume() => audioHandler.play();
+  Future<void> pause() => _handler.pause();
+  Future<void> resume() => _handler.play();
 
   Future<void> stop() async {
-    await audioHandler.stop();
+    await _handler.stop();
     _currentStreamId = null;
     _currentStreamTitle = null;
     state = const PlayerIdle();
   }
 
   Future<void> setVolume(double volume) async {
-    await audioHandler.setVolume(volume);
+    await _handler.setVolume(volume);
     if (state is PlayerPlaying) {
       final current = state as PlayerPlaying;
       state = PlayerPlaying(
@@ -121,9 +128,13 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       );
     }
   }
+
+  /// Permet aux tests widget de simuler un état sans passer par just_audio.
+  @visibleForTesting
+  void debugSetState(PlayerState newState) => state = newState;
 }
 
 final playerProvider =
-StateNotifierProvider<PlayerNotifier, PlayerState>((ref) {
-  return PlayerNotifier();
+    StateNotifierProvider<PlayerNotifier, PlayerState>((ref) {
+  return PlayerNotifier(handler: audioHandler);
 });
