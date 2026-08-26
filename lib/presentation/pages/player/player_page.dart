@@ -4,6 +4,7 @@ import 'package:lullify_mobile/core/constants.dart';
 import 'package:lullify_mobile/core/theme/app_colors.dart';
 import 'package:lullify_mobile/domain/entities/stream.dart';
 import 'package:lullify_mobile/presentation/providers/player_provider.dart';
+import 'package:lullify_mobile/presentation/providers/stream_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/listener_count.dart';
 import 'package:lullify_mobile/presentation/widgets/live_badge.dart';
 
@@ -34,6 +35,8 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
   @override
   Widget build(BuildContext context) {
     final playerState = ref.watch(playerProvider);
+    // compteur d'auditeurs en temps réel
+    final liveListeners = ref.watch(listenerCountProvider(widget.stream.id));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -106,7 +109,7 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
                       ),
                     ],
                     const SizedBox(height: 12),
-                    ListenerCount(count: widget.stream.listenerCount),
+                    ListenerCount(count: liveListeners),
                   ],
                 ),
               ),
