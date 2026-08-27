@@ -23,8 +23,8 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final hlsUrl =
-          '${AppConstants.apiBaseUrl.replaceAll('/api/v1', '')}/streams/${widget.stream.mountPoint}/playlist.m3u8';
-      ref.read(playerProvider.notifier).play(
+          '${AppConstants.apiBaseUrl.replaceAll('/api/v1', '')}/streams/${widget.stream.id}/playlist.m3u8';
+          ref.read(playerProvider.notifier).play(
         streamId: widget.stream.id,
         streamTitle: widget.stream.title,
         hlsUrl: hlsUrl,
