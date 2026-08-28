@@ -6,6 +6,7 @@ import 'package:lullify_mobile/presentation/pages/auth/register_page.dart';
 import 'package:lullify_mobile/presentation/pages/home/home_page.dart';
 import 'package:lullify_mobile/presentation/pages/explore/explore_page.dart';
 import 'package:lullify_mobile/presentation/pages/library/library_page.dart';
+import 'package:lullify_mobile/presentation/pages/library/favorites_page.dart';
 import 'package:lullify_mobile/presentation/pages/profile/profile_page.dart';
 import 'package:lullify_mobile/presentation/pages/splash/splash_page.dart';
 import 'package:lullify_mobile/presentation/providers/auth_provider.dart';
@@ -13,19 +14,18 @@ import 'package:lullify_mobile/presentation/widgets/main_shell.dart';
 import 'package:lullify_mobile/presentation/pages/broadcaster/broadcaster_dashboard_page.dart';
 import 'package:lullify_mobile/presentation/pages/history/listening_history_page.dart';
 
-
 class AppRoutes {
   AppRoutes._();
-  static const String splash   = '/splash';
-  static const String login    = '/login';
-  static const String register = '/register';
-  static const String home     = '/';
-  static const String explore  = '/explore';
-  static const String library  = '/library';
-  static const String profile  = '/profile';
+  static const String splash      = '/splash';
+  static const String login       = '/login';
+  static const String register    = '/register';
+  static const String home        = '/';
+  static const String explore     = '/explore';
+  static const String library     = '/library';
+  static const String profile     = '/profile';
   static const String broadcaster = '/broadcaster';
-  static const String history  = '/history';
-
+  static const String history     = '/history';
+  static const String favorites   = '/favorites';
 }
 
 const _publicRoutes = [AppRoutes.splash, AppRoutes.login, AppRoutes.register];
@@ -78,6 +78,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.history,
         pageBuilder: (context, state) =>
         const MaterialPage(child: ListeningHistoryPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.favorites,
+        pageBuilder: (context, state) =>
+        const MaterialPage(child: FavoritesPage()),
       ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
