@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lullify_mobile/core/theme/app_colors.dart';
 import 'package:lullify_mobile/domain/entities/stream.dart';
+import 'package:lullify_mobile/presentation/providers/favorite_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/listener_count.dart';
 import 'package:lullify_mobile/presentation/widgets/live_badge.dart';
 
-class StreamCard extends StatelessWidget {
+class StreamCard extends ConsumerWidget {
   const StreamCard({
     required this.stream,
     this.onTap,
@@ -15,7 +17,13 @@ class StreamCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFav = ref.watch(
+      favoriteProvider.select((state) =>
+      state is FavoriteLoaded &&
+          state.favorites.any((f) => f.streamId == stream.id)),
+    );
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -60,9 +68,7 @@ class StreamCard extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.radio_rounded,
-                  color: stream.isLive
-                      ? Colors.white
-                      : AppColors.textMuted,
+                  color: stream.isLive ? Colors.white : AppColors.textMuted,
                   size: 26,
                 ),
               ),
@@ -73,7 +79,6 @@ class StreamCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Titre + badge
                     Row(
                       children: [
                         Expanded(
@@ -99,19 +104,36 @@ class StreamCard extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 8),
-                    // Listener count
                     if (stream.isLive)
                       ListenerCount(count: stream.listenerCount),
                   ],
                 ),
               ),
 
-              // ── Chevron ─────────────────────────────────
-              if (stream.isLive)
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.violet.withValues(alpha: 0.6),
-                ),
+              // ── Favori + chevron ─────────────────────────
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: () => ref
+                        .read(favoriteProvider.notifier)
+                        .toggle(stream.id),
+                    child: Icon(
+                      isFav
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      color: isFav ? AppColors.neonPink : AppColors.textMuted,
+                      size: 20,
+                    ),
+                  ),
+                  if (stream.isLive) ...[
+                    const SizedBox(height: 8),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.violet.withValues(alpha: 0.6),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
         ),
@@ -120,7 +142,7 @@ class StreamCard extends StatelessWidget {
   }
 }
 
-// ── Skeleton loading ─────────────────────────────────────────────────────────
+// ── Skeleton loading ──────────────────────────────────────────────────────────
 
 class StreamCardSkeleton extends StatefulWidget {
   const StreamCardSkeleton({super.key});
@@ -167,13 +189,11 @@ class _StreamCardSkeletonState extends State<StreamCardSkeleton>
           ),
           child: Row(
             children: [
-              // Avatar skeleton
               Container(
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLight
-                      .withValues(alpha: _shimmer.value),
+                  color: AppColors.surfaceLight.withValues(alpha: _shimmer.value),
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
@@ -182,24 +202,20 @@ class _StreamCardSkeletonState extends State<StreamCardSkeleton>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Titre skeleton
                     Container(
                       height: 14,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceLight
-                            .withValues(alpha: _shimmer.value),
+                        color: AppColors.surfaceLight.withValues(alpha: _shimmer.value),
                         borderRadius: BorderRadius.circular(7),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Description skeleton
                     Container(
                       height: 11,
                       width: 140,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceLight
-                            .withValues(alpha: _shimmer.value * 0.7),
+                        color: AppColors.surfaceLight.withValues(alpha: _shimmer.value * 0.7),
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
