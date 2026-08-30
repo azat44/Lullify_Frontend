@@ -59,11 +59,31 @@ class HomePage extends ConsumerWidget {
           stream: stream,
           onTap: stream.isLive
               ? () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => PlayerPage(stream: stream),
+            PageRouteBuilder(
+              transitionDuration: const Duration(milliseconds: 400),
+              pageBuilder: (_, __, ___) => PlayerPage(stream: stream),
+              transitionsBuilder: (_, animation, __, child) {
+                return FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOut,
+                  ),
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.08),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOut,
+                    )),
+                    child: child,
+                  ),
+                );
+              },
             ),
           )
-              : null,        );
+              : null,
+        );
       },
     );
   }
@@ -73,12 +93,14 @@ class HomePage extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.radio_rounded, size: 64,
-              color: AppColors.violet.withValues(alpha: 0.4)),
+          Icon(Icons.radio_rounded,
+              size: 64, color: AppColors.violet.withValues(alpha: 0.4)),
           const SizedBox(height: 16),
-          Text('No live streams', style: Theme.of(context).textTheme.titleMedium),
+          Text('No live streams',
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text('Pull to refresh', style: Theme.of(context).textTheme.bodySmall),
+          Text('Pull to refresh',
+              style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );
@@ -89,13 +111,14 @@ class HomePage extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline_rounded, size: 48,
-              color: AppColors.hotPink.withValues(alpha: 0.7)),
+          Icon(Icons.error_outline_rounded,
+              size: 48, color: AppColors.hotPink.withValues(alpha: 0.7)),
           const SizedBox(height: 16),
           Text(message, style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => ref.read(streamListProvider.notifier).refresh(),
+            onPressed: () =>
+                ref.read(streamListProvider.notifier).refresh(),
             child: const Text('Retry'),
           ),
         ],
