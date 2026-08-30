@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lullify_mobile/core/router/page_transitions.dart';
 import 'package:lullify_mobile/presentation/pages/auth/login_page.dart';
 import 'package:lullify_mobile/presentation/pages/auth/register_page.dart';
 import 'package:lullify_mobile/presentation/pages/home/home_page.dart';
@@ -8,6 +9,7 @@ import 'package:lullify_mobile/presentation/pages/explore/explore_page.dart';
 import 'package:lullify_mobile/presentation/pages/library/library_page.dart';
 import 'package:lullify_mobile/presentation/pages/library/favorites_page.dart';
 import 'package:lullify_mobile/presentation/pages/profile/profile_page.dart';
+import 'package:lullify_mobile/presentation/pages/profile/admin_page.dart';
 import 'package:lullify_mobile/presentation/pages/splash/splash_page.dart';
 import 'package:lullify_mobile/presentation/providers/auth_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/main_shell.dart';
@@ -26,6 +28,7 @@ class AppRoutes {
   static const String broadcaster = '/broadcaster';
   static const String history     = '/history';
   static const String favorites   = '/favorites';
+  static const String admin       = '/admin';
 }
 
 const _publicRoutes = [AppRoutes.splash, AppRoutes.login, AppRoutes.register];
@@ -77,12 +80,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.history,
         pageBuilder: (context, state) =>
-        const MaterialPage(child: ListeningHistoryPage()),
+        const FadeSlideTransitionPage(child: ListeningHistoryPage()),
       ),
       GoRoute(
         path: AppRoutes.favorites,
         pageBuilder: (context, state) =>
-        const MaterialPage(child: FavoritesPage()),
+        const FadeSlideTransitionPage(child: FavoritesPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.admin,
+        pageBuilder: (context, state) =>
+        const FadeSlideTransitionPage(child: AdminPage()),
       ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),

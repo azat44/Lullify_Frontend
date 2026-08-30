@@ -69,7 +69,6 @@ class _VaporwaveNavBar extends StatelessWidget {
             width: 1,
           ),
         ),
-        // Glow subtil sur le bord supérieur
         boxShadow: [
           BoxShadow(
             color: AppColors.violet.withValues(alpha: 0.15),
@@ -125,43 +124,48 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: selected
-                ? BoxDecoration(
-              color: AppColors.violet.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.violet.withValues(alpha: 0.4),
-                width: 1,
+    return Semantics(
+      label: item.label,
+      selected: selected,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: selected
+                  ? BoxDecoration(
+                color: AppColors.violet.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.violet.withValues(alpha: 0.4),
+                  width: 1,
+                ),
+              )
+                  : null,
+              child: Icon(
+                selected ? item.icon : item.outlinedIcon,
+                color: selected ? AppColors.violet : AppColors.textMuted,
+                size: 22,
               ),
-            )
-                : null,
-            child: Icon(
-              selected ? item.icon : item.outlinedIcon,
-              color: selected ? AppColors.violet : AppColors.textMuted,
-              size: 22,
             ),
-          ),
-          const SizedBox(height: 4),
-          AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 200),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              color: selected ? AppColors.violet : AppColors.textMuted,
+            const SizedBox(height: 4),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                color: selected ? AppColors.violet : AppColors.textMuted,
+              ),
+              child: Text(item.label),
             ),
-            child: Text(item.label),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
