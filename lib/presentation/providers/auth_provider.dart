@@ -44,7 +44,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthSuccess(user);
     }
   }
-
+  
   Future<void> login({
     required String email,
     required String password,
@@ -62,6 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String username,
     required String password,
+    bool wantBroadcaster = false,
   }) async {
     state = const AuthLoading();
     try {
@@ -69,6 +70,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
         username: username,
         password: password,
+        wantBroadcaster: wantBroadcaster,
       );
       state = AuthSuccess(user);
     } catch (e) {

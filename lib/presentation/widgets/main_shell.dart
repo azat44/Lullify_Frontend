@@ -1,43 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lullify_mobile/core/router/app_router.dart';
 import 'package:lullify_mobile/core/theme/app_colors.dart';
+import 'package:lullify_mobile/domain/entities/user.dart';
+import 'package:lullify_mobile/presentation/providers/auth_provider.dart';
 
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   const MainShell({required this.child, super.key});
 
   final Widget child;
 
-  int _currentIndex(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
-    if (location.startsWith(AppRoutes.explore)) return 1;
-    if (location.startsWith(AppRoutes.library)) return 2;
-    if (location.startsWith(AppRoutes.broadcaster)) return 3;
-    if (location.startsWith(AppRoutes.profile)) return 4;
-    return 0;
-  }
-
-  void _onTap(BuildContext context, int index) {
-    switch (index) {
-      case 0: context.go(AppRoutes.home);
-      case 1: context.go(AppRoutes.explore);
-      case 2: context.go(AppRoutes.library);
-      case 3: context.go(AppRoutes.broadcaster);
-      case 4: context.go(AppRoutes.profile);
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final index = _currentIndex(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final isBroadcaster = authState is AuthSuccess &&
+        (authState.user.role == UserRole.broadcaster ||
+            authState.user.role == UserRole.admin);
+
+    final items = _buildItems(isBroadcaster);
+    final index = _currentIndex(context, isBroadcaster);
 
     return Scaffold(
       body: child,
       bottomNavigationBar: _VaporwaveNavBar(
         currentIndex: index,
-        onTap: (i) => _onTap(context, i),
+        onTap: (i) => _onTap(context, i, isBroadcaster),
+        items: items,
       ),
     );
+  }
+
+  List<_NavItem> _buildItems(bool isBroadcaster) {
+    final base = [
+      const _NavItem(icon: Icons.home_rounded, outlinedIcon: Icons.home_outlined, label: 'Home'),
+      const _NavItem(icon: Icons.explore_rounded, outlinedIcon: Icons.explore_outlined, label: 'Explore'),
+      const _NavItem(icon: Icons.library_music_rounded, outlinedIcon: Icons.library_music_outlined, label: 'Library'),
+    ];
+
+    if (isBroadcaster) {
+      base.add(const _NavItem(icon: Icons.radio_rounded, outlinedIcon: Icons.radio_outlined, label: 'Broadcast'));
+    }
+
+    base.add(const _NavItem(icon: Icons.person_rounded, outlinedIcon: Icons.person_outline_rounded, label: 'Profile'));
+    return base;
+  }
+
+  int _currentIndex(BuildContext context, bool isBroadcaster) {
+    final location = GoRouterState.of(context).uri.path;
+    if (location.startsWith(AppRoutes.explore)) return 1;
+    if (location.startsWith(AppRoutes.library)) return 2;
+    if (isBroadcaster && location.startsWith(AppRoutes.broadcaster)) return 3;
+    if (location.startsWith(AppRoutes.profile)) return isBroadcaster ? 4 : 3;
+    return 0;
+  }
+
+  void _onTap(BuildContext context, int index, bool isBroadcaster) {
+    if (isBroadcaster) {
+      switch (index) {
+        case 0: context.go(AppRoutes.home);
+        case 1: context.go(AppRoutes.explore);
+        case 2: context.go(AppRoutes.library);
+        case 3: context.go(AppRoutes.broadcaster);
+        case 4: context.go(AppRoutes.profile);
+      }
+    } else {
+      switch (index) {
+        case 0: context.go(AppRoutes.home);
+        case 1: context.go(AppRoutes.explore);
+        case 2: context.go(AppRoutes.library);
+        case 3: context.go(AppRoutes.profile);
+      }
+    }
   }
 }
 
@@ -45,18 +79,12 @@ class _VaporwaveNavBar extends StatelessWidget {
   const _VaporwaveNavBar({
     required this.currentIndex,
     required this.onTap,
+    required this.items,
   });
 
   final int currentIndex;
   final void Function(int) onTap;
-
-  static const _items = [
-    _NavItem(icon: Icons.home_rounded, outlinedIcon: Icons.home_outlined, label: 'Home'),
-    _NavItem(icon: Icons.explore_rounded, outlinedIcon: Icons.explore_outlined, label: 'Explore'),
-    _NavItem(icon: Icons.library_music_rounded, outlinedIcon: Icons.library_music_outlined, label: 'Library'),
-    _NavItem(icon: Icons.radio_rounded, outlinedIcon: Icons.radio_outlined, label: 'Broadcast'),
-    _NavItem(icon: Icons.person_rounded, outlinedIcon: Icons.person_outline_rounded, label: 'Profile'),
-  ];
+  final List<_NavItem> items;
 
   @override
   Widget build(BuildContext context) {
@@ -64,10 +92,7 @@ class _VaporwaveNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(
-          top: BorderSide(
-            color: AppColors.violet.withValues(alpha: 0.3),
-            width: 1,
-          ),
+          top: BorderSide(color: AppColors.violet.withValues(alpha: 0.3), width: 1),
         ),
         boxShadow: [
           BoxShadow(
@@ -82,15 +107,11 @@ class _VaporwaveNavBar extends StatelessWidget {
         child: SizedBox(
           height: 64,
           child: Row(
-            children: List.generate(_items.length, (i) {
-              final item = _items[i];
+            children: List.generate(items.length, (i) {
+              final item = items[i];
               final selected = i == currentIndex;
               return Expanded(
-                child: _NavBarItem(
-                  item: item,
-                  selected: selected,
-                  onTap: () => onTap(i),
-                ),
+                child: _NavBarItem(item: item, selected: selected, onTap: () => onTap(i)),
               );
             }),
           ),
@@ -101,22 +122,14 @@ class _VaporwaveNavBar extends StatelessWidget {
 }
 
 class _NavItem {
-  const _NavItem({
-    required this.icon,
-    required this.outlinedIcon,
-    required this.label,
-  });
+  const _NavItem({required this.icon, required this.outlinedIcon, required this.label});
   final IconData icon;
   final IconData outlinedIcon;
   final String label;
 }
 
 class _NavBarItem extends StatelessWidget {
-  const _NavBarItem({
-    required this.item,
-    required this.selected,
-    required this.onTap,
-  });
+  const _NavBarItem({required this.item, required this.selected, required this.onTap});
 
   final _NavItem item;
   final bool selected;
@@ -140,13 +153,10 @@ class _NavBarItem extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: selected
                   ? BoxDecoration(
-                color: AppColors.violet.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.violet.withValues(alpha: 0.4),
-                  width: 1,
-                ),
-              )
+                      color: AppColors.violet.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.violet.withValues(alpha: 0.4), width: 1),
+                    )
                   : null,
               child: Icon(
                 selected ? item.icon : item.outlinedIcon,

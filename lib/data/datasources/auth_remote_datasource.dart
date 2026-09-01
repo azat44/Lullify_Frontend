@@ -1,5 +1,3 @@
-// lib/data/datasources/auth_remote_datasource.dart
-
 import 'package:dio/dio.dart';
 import 'package:lullify_mobile/data/models/user_model.dart';
 
@@ -28,11 +26,13 @@ class AuthRemoteDataSource {
     required String email,
     required String username,
     required String password,
+    bool wantBroadcaster = false,
   }) async {
     final response = await _dio.post('/auth/register', data: {
       'email': email,
       'username': username,
       'password': password,
+      'want_broadcaster': wantBroadcaster,
     });
     final data = response.data as Map<String, dynamic>;
     return UserModel.fromJson(

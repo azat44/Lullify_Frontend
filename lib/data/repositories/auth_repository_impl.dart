@@ -45,11 +45,13 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String username,
     required String password,
+    bool wantBroadcaster = false,
   }) async {
     final user = await _remote.register(
       email: email,
       username: username,
       password: password,
+      wantBroadcaster: wantBroadcaster,
     );
     await _saveTokens(user);
     return user;
@@ -61,11 +63,10 @@ class AuthRepositoryImpl implements AuthRepository {
     await _storage.delete(key: AppConstants.accessTokenKey);
     await _storage.delete(key: AppConstants.refreshTokenKey);
   }
-
-  @override
+    @override
   Future<User?> getCurrentUser() async {
     final token = await _storage.read(key: AppConstants.accessTokenKey);
     if (token == null) return null;
-    return null;
+    return   null;
   }
 }

@@ -19,6 +19,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  bool _wantBroadcaster = false;
 
   @override
   void dispose() {
@@ -31,11 +32,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
     await ref.read(authProvider.notifier).register(
       email: _emailController.text.trim(),
       username: _usernameController.text.trim(),
       password: _passwordController.text,
+      wantBroadcaster: _wantBroadcaster,
     );
   }
 
@@ -44,16 +45,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final authState = ref.watch(authProvider);
 
     ref.listen(authProvider, (_, next) {
-      if (next is AuthSuccess) {
-        context.go(AppRoutes.home);
-      }
-
+      if (next is AuthSuccess) context.go(AppRoutes.home);
       if (next is AuthError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.message),
-            backgroundColor: AppColors.hotPink,
-          ),
+          SnackBar(content: Text(next.message), backgroundColor: AppColors.hotPink),
         );
       }
     });
@@ -63,9 +58,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -76,45 +69,30 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   const SizedBox(height: 24),
                   const SizedBox(height: 10),
 
-                  /// Logo header (CENTERED)
                   Center(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          'assets/images/Lullify_Moon_Base.png',
-                          height: 85,
-                        ),
+                        Image.asset('assets/images/Lullify_Moon_Base.png', height: 85),
                         const SizedBox(width: 12),
-                        Image.asset(
-                          'assets/images/Lullify_Text.png',
-                          height: 46,
-                        ),
+                        Image.asset('assets/images/Lullify_Text.png', height: 46),
                       ],
                     ),
                   ),
 
                   const SizedBox(height: 28),
 
-                  /// Title
-                  Text(
-                    'Create account',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineLarge,
-                  ),
-
+                  Text('Create account',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineLarge),
                   const SizedBox(height: 6),
-
-                  Text(
-                    'Join the lo-fi community',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                  Text('Join the lo-fi community',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium),
 
                   const SizedBox(height: 40),
 
-                  /// Email
                   VaporwaveTextField(
                     label: 'Email',
                     hint: 'you@example.com',
@@ -123,19 +101,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     validator: (v) {
-                      if (v == null || v.isEmpty) {
-                        return 'Email is required';
-                      }
-                      if (!v.contains('@')) {
-                        return 'Enter a valid email';
-                      }
+                      if (v == null || v.isEmpty) return 'Email is required';
+                      if (!v.contains('@')) return 'Enter a valid email';
                       return null;
                     },
                   ),
 
                   const SizedBox(height: 20),
 
-                  /// Username
                   VaporwaveTextField(
                     label: 'Username',
                     hint: 'chill_vibes',
@@ -143,19 +116,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     prefixIcon: Icons.person_outline_rounded,
                     textInputAction: TextInputAction.next,
                     validator: (v) {
-                      if (v == null || v.isEmpty) {
-                        return 'Username is required';
-                      }
-                      if (v.length < 3) {
-                        return 'At least 3 characters';
-                      }
+                      if (v == null || v.isEmpty) return 'Username is required';
+                      if (v.length < 3) return 'At least 3 characters';
                       return null;
                     },
                   ),
 
                   const SizedBox(height: 20),
 
-                  /// Password
                   VaporwaveTextField(
                     label: 'Password',
                     hint: '••••••••',
@@ -164,19 +132,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     obscureText: true,
                     textInputAction: TextInputAction.next,
                     validator: (v) {
-                      if (v == null || v.isEmpty) {
-                        return 'Password is required';
-                      }
-                      if (v.length < 8) {
-                        return 'At least 8 characters';
-                      }
+                      if (v == null || v.isEmpty) return 'Password is required';
+                      if (v.length < 8) return 'At least 8 characters';
                       return null;
                     },
                   ),
 
                   const SizedBox(height: 20),
 
-                  /// Confirm password
                   VaporwaveTextField(
                     label: 'Confirm password',
                     hint: '••••••••',
@@ -186,16 +149,53 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
                     validator: (v) {
-                      if (v != _passwordController.text) {
-                        return 'Passwords do not match';
-                      }
+                      if (v != _passwordController.text) return 'Passwords do not match';
                       return null;
                     },
                   ),
 
+                  const SizedBox(height: 20),
+
+                  // ── Broadcaster toggle ──────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: _wantBroadcaster
+                            ? AppColors.violet.withValues(alpha: 0.5)
+                            : AppColors.surfaceLight,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.radio_rounded,
+                            color: _wantBroadcaster ? AppColors.violet : AppColors.textMuted,
+                            size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('I want to broadcast',
+                                  style: Theme.of(context).textTheme.titleMedium),
+                              Text('Create and stream live radio',
+                                  style: Theme.of(context).textTheme.bodySmall),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: _wantBroadcaster,
+                          onChanged: (v) => setState(() => _wantBroadcaster = v),
+                          activeColor: AppColors.violet,
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 36),
 
-                  /// Button
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -210,36 +210,24 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                       child: isLoading
                           ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                          : const Text(
-                        'Create account',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('Create account',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  /// Login link
                   Center(
                     child: TextButton(
                       onPressed: () => context.pop(),
                       child: RichText(
                         text: TextSpan(
                           text: 'Already have an account? ',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                           children: [
                             TextSpan(
                               text: 'Sign in',
@@ -248,9 +236,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 fontWeight: FontWeight.w600,
                                 shadows: [
                                   Shadow(
-                                    color: AppColors.neonCyan.withValues(
-                                      alpha: 0.5,
-                                    ),
+                                    color: AppColors.neonCyan.withValues(alpha: 0.5),
                                     blurRadius: 8,
                                   ),
                                 ],
