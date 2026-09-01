@@ -43,6 +43,7 @@ class _FakeAuthRepository implements AuthRepository {
     required String email,
     required String username,
     required String password,
+    bool wantBroadcaster = false,
   }) async =>
       _user;
 

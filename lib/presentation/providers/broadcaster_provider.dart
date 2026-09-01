@@ -45,8 +45,7 @@ class BroadcasterState {
       stream: stream ?? this.stream,
       playlists: playlists ?? this.playlists,
       busy: busy ?? this.busy,
-      uploadProgress:
-          clearUploadProgress ? null : (uploadProgress ?? this.uploadProgress),
+      uploadProgress: clearUploadProgress ? null : (uploadProgress ?? this.uploadProgress),
       error: clearMessages ? null : (error ?? this.error),
       notice: clearMessages ? null : (notice ?? this.notice),
     );
@@ -56,18 +55,41 @@ class BroadcasterState {
 class BroadcasterNotifier extends StateNotifier<BroadcasterState> {
   BroadcasterNotifier(this._repo, this._ref) : super(const BroadcasterState()) {
     loadPlaylists();
+    _restoreLiveStream();
   }
 
   final BroadcasterRepository _repo;
   final Ref _ref;
 
+  // Restaure l'état live si le broadcaster a déjà un stream actif
+  Future<void> _restoreLiveStream() async {
+    try {
+      final dio = _ref.read(dioProvider);
+      final response = await dio.get('/streams/mine');
+      final streams = response.data['streams'] as List<dynamic>? ?? [];
+      if (streams.isNotEmpty) {
+        final s = streams.first as Map<String, dynamic>;
+        if (s['status'] == 'live') {
+          state = state.copyWith(
+            stream: BroadcasterStream(
+              id: s['id'] as String,
+              title: s['title'] as String,
+              mountPoint: s['mount_point'] as String,
+              status: BroadcastStatus.live,
+            ),
+          );
+        }
+      }
+    } catch (_) {
+      // Silencieux — pas bloquant
+    }
+  }
+
   Future<void> loadPlaylists() async {
     try {
       final playlists = await _repo.listMyPlaylists();
       state = state.copyWith(playlists: playlists);
-    } catch (_) {
-      // Pas bloquant pour le dashboard : on laisse la liste vide.
-    }
+    } catch (_) {}
   }
 
   Future<void> createStream({
@@ -153,9 +175,7 @@ class BroadcasterNotifier extends StateNotifier<BroadcasterState> {
         artist: artist,
         format: format,
         onProgress: (sent, total) {
-          if (total > 0) {
-            state = state.copyWith(uploadProgress: sent / total);
-          }
+          if (total > 0) state = state.copyWith(uploadProgress: sent / total);
         },
       );
       state = state.copyWith(
