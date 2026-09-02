@@ -44,7 +44,6 @@ class AppTheme {
         elevation: 0,
       ),
 
-      // NavigationBar (Material 3)
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.violet.withOpacity(0.25),
