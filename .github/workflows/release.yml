@@ -56,14 +56,9 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab
 
   # ─────────────────────────────────────────────────────────────
-  # iOS : IPA
-  #
-  # PAR DÉFAUT (ci-dessous) : build non signé, sans compte Apple.
-  # Produit une archive .xcarchive (pas un IPA distribuable — un IPA
-  # signé exige un compte Apple Developer payant).
-  #
-  # SI TU AS UN COMPTE APPLE DEVELOPER : commente le bloc "unsigned"
-  # et décommente le bloc "signed" plus bas.
+  # iOS : archive non signée (aucun compte Apple requis)
+  # L'archive .xcarchive est un DOSSIER de milliers de fichiers :
+  # on la zippe pour n'avoir qu'un seul fichier propre à publier.
   # ─────────────────────────────────────────────────────────────
   ios:
     name: Build iOS
@@ -77,15 +72,19 @@ jobs:
 
       - run: flutter pub get
 
-      # ── Unsigned (défaut, aucun compte Apple requis) ──
       - name: Build unsigned archive
         run: flutter build ipa --release --no-codesign
+
+      - name: Zip iOS archive
+        run: |
+          cd build/ios/archive
+          zip -r -q lullify-ios.xcarchive.zip *.xcarchive
 
       - name: Upload iOS archive
         uses: actions/upload-artifact@v4
         with:
           name: lullify-ios-unsigned
-          path: build/ios/archive/*.xcarchive
+          path: build/ios/archive/lullify-ios.xcarchive.zip
 
       # ── Signed (décommente si tu as un compte Apple Developer) ──
       # Secrets nécessaires :
@@ -117,7 +116,7 @@ jobs:
       #     path: build/ios/ipa/*.ipa
 
   # ─────────────────────────────────────────────────────────────
-  # Attache les binaires à la Release GitHub du tag
+  # Attache UNIQUEMENT l'APK, l'AAB et le zip iOS à la Release
   # ─────────────────────────────────────────────────────────────
   release:
     name: Publish GitHub Release
@@ -134,4 +133,7 @@ jobs:
       - name: Create/Update Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*
+          files: |
+            artifacts/lullify-android/app-release.apk
+            artifacts/lullify-android/app-release.aab
+            artifacts/lullify-ios-unsigned/lullify-ios.xcarchive.zip
