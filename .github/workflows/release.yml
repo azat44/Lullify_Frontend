@@ -112,6 +112,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/**/*.apk
-            artifacts/**/*.aab
-            artifacts/**/*.xcarchive.zip
+            artifacts/lullify-android/flutter-apk/app-release.apk
+            artifacts/lullify-android/bundle/release/app-release.aab
+            artifacts/lullify-ios-unsigned/lullify-ios.xcarchive.zip
