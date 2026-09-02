@@ -3,10 +3,10 @@ class AppConstants {
 
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8080/api/v1',
+    defaultValue: 'https://lullify.up.railway.app/api/v1',
   );
-  // use this command to start the flutter with the online API based on the develop branch
   // flutter run --dart-define=API_BASE_URL=https://lullifybackend-dev.up.railway.app/api/v1
+  // flutter run (uses Railway prod API by default)
   static const Duration apiTimeout = Duration(seconds: 15);
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
