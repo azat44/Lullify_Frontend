@@ -27,11 +27,9 @@ jobs:
 
       - run: flutter pub get
 
-      # Reconstitue le keystore depuis le secret base64
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
 
-      # Crée android/key.properties que build.gradle.kts va lire
       - name: Create key.properties
         run: |
           cat > android/key.properties <<EOF
@@ -56,9 +54,7 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab
 
   # ─────────────────────────────────────────────────────────────
-  # iOS : archive non signée (aucun compte Apple requis)
-  # L'archive .xcarchive est un DOSSIER de milliers de fichiers :
-  # on la zippe pour n'avoir qu'un seul fichier propre à publier.
+  # iOS : archive non signée
   # ─────────────────────────────────────────────────────────────
   ios:
     name: Build iOS
@@ -88,8 +84,7 @@ jobs:
 
   # ─────────────────────────────────────────────────────────────
   # Attache l'APK, l'AAB et le zip iOS à la Release.
-  # On utilise merge-multiple pour tout mettre à plat dans artifacts/,
-  # puis des globs ** pour retrouver les fichiers peu importe la structure.
+  # Chemins exacts vus dans "List downloaded files".
   # ─────────────────────────────────────────────────────────────
   release:
     name: Publish GitHub Release
@@ -112,6 +107,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/lullify-android/flutter-apk/app-release.apk
-            artifacts/lullify-android/bundle/release/app-release.aab
-            artifacts/lullify-ios-unsigned/lullify-ios.xcarchive.zip
+            artifacts/flutter-apk/app-release.apk
+            artifacts/bundle/release/app-release.aab
+            artifacts/lullify-ios.xcarchive.zip
