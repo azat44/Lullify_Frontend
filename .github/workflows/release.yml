@@ -86,37 +86,10 @@ jobs:
           name: lullify-ios-unsigned
           path: build/ios/archive/lullify-ios.xcarchive.zip
 
-      # ── Signed (décommente si tu as un compte Apple Developer) ──
-      # Secrets nécessaires :
-      #   BUILD_CERTIFICATE_BASE64      -> certificat de distribution .p12 en base64
-      #   P12_PASSWORD                  -> mot de passe du .p12
-      #   PROVISIONING_PROFILE_BASE64   -> profil de provisioning en base64
-      #   KEYCHAIN_PASSWORD             -> mot de passe temporaire du trousseau CI
-      # Il faut aussi un ios/ExportOptions.plist (teamID + method: app-store/ad-hoc).
-      #
-      # - name: Import Apple signing assets
-      #   uses: apple-actions/import-codesign-certs@v3
-      #   with:
-      #     p12-file-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-      #     p12-password: ${{ secrets.P12_PASSWORD }}
-      #
-      # - name: Install provisioning profile
-      #   run: |
-      #     mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-      #     echo "${{ secrets.PROVISIONING_PROFILE_BASE64 }}" | base64 -d \
-      #       > ~/Library/MobileDevice/Provisioning\ Profiles/lullify.mobileprovision
-      #
-      # - name: Build signed IPA
-      #   run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
-      #
-      # - name: Upload signed IPA
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: lullify-ios
-      #     path: build/ios/ipa/*.ipa
-
   # ─────────────────────────────────────────────────────────────
-  # Attache UNIQUEMENT l'APK, l'AAB et le zip iOS à la Release
+  # Attache l'APK, l'AAB et le zip iOS à la Release.
+  # On utilise merge-multiple pour tout mettre à plat dans artifacts/,
+  # puis des globs ** pour retrouver les fichiers peu importe la structure.
   # ─────────────────────────────────────────────────────────────
   release:
     name: Publish GitHub Release
@@ -126,14 +99,19 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
+          merge-multiple: true
+
+      - name: List downloaded files (debug)
+        run: find artifacts -type f
 
       - name: Create/Update Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/lullify-android/app-release.apk
-            artifacts/lullify-android/app-release.aab
+            artifacts/lullify-android/flutter-apk/app-release.apk
+            artifacts/lullify-android/bundle/release/app-release.aab
             artifacts/lullify-ios-unsigned/lullify-ios.xcarchive.zip
