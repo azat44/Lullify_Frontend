@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:lullify_mobile/domain/entities/favorite.dart';
+import 'package:lullify_mobile/domain/entities/history_entry.dart';
 import 'package:lullify_mobile/domain/entities/stream.dart';
+import 'package:lullify_mobile/domain/repositories/favorite_repository.dart';
+import 'package:lullify_mobile/domain/repositories/history_repository.dart';
 import 'package:lullify_mobile/presentation/pages/player/player_page.dart';
+import 'package:lullify_mobile/presentation/providers/favorite_provider.dart';
+import 'package:lullify_mobile/presentation/providers/history_provider.dart';
 import 'package:lullify_mobile/presentation/providers/player_provider.dart';
 import 'package:lullify_mobile/presentation/providers/stream_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/listener_count.dart';
@@ -49,6 +55,33 @@ class _FakeAudioHandler implements LullifyAudioHandler {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+// ── Faux repositories : évitent tout appel réseau/stockage réel ─────
+// (favoriteProvider et historyRepositoryProvider sont désormais lus par
+// PlayerPage ; sans override ils remonteraient jusqu'à dioProvider, qui a
+// besoin d'un vrai FlutterSecureStorage indisponible en test.)
+class _FakeFavoriteRepository implements FavoriteRepository {
+  @override
+  Future<List<Favorite>> getMyFavorites() async => const [];
+
+  @override
+  Future<void> addFavorite(String streamId) async {}
+
+  @override
+  Future<void> removeFavorite(String streamId) async {}
+}
+
+class _FakeHistoryRepository implements HistoryRepository {
+  @override
+  Future<List<HistoryEntry>> getMyHistory() async => const [];
+
+  @override
+  Future<void> recordListen({
+    required String trackTitle,
+    required String artist,
+    required String streamId,
+  }) async {}
+}
+
 // ── Helpers ─────────────────────────────────────────────────────────
 AudioStream _stream({
   StreamStatus status = StreamStatus.live,
@@ -74,6 +107,9 @@ Widget _wrap({
     overrides: [
       playerProvider.overrideWith((ref) => notifier),
       listenerCountProvider(stream.id).overrideWithValue(listenerCount),
+      favoriteProvider
+          .overrideWith((ref) => FavoriteNotifier(_FakeFavoriteRepository())),
+      historyRepositoryProvider.overrideWithValue(_FakeHistoryRepository()),
     ],
     child: MaterialApp(home: PlayerPage(stream: stream)),
   );
@@ -177,7 +213,6 @@ void main() {
 
   testWidgets('en Loading, affiche l\'icône hourglass', (tester) async {
     await tester.pumpWidget(_wrap(stream: _stream(), notifier: notifier));
-    // Pas de pump supplémentaire : play() met l'état en Loading immédiatement
     notifier.state = const PlayerLoading();
     await tester.pump();
 

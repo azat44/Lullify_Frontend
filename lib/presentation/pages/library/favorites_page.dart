@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lullify_mobile/core/theme/app_colors.dart';
 import 'package:lullify_mobile/domain/entities/favorite.dart';
 import 'package:lullify_mobile/presentation/providers/favorite_provider.dart';
+import 'package:lullify_mobile/presentation/providers/stream_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/lullify_app_bar.dart';
 
 class FavoritesPage extends ConsumerWidget {
@@ -107,14 +108,15 @@ class FavoritesPage extends ConsumerWidget {
   }
 }
 
-class _FavoriteTile extends StatelessWidget {
+class _FavoriteTile extends ConsumerWidget {
   const _FavoriteTile({required this.favorite, required this.onRemove});
 
   final Favorite favorite;
   final VoidCallback onRemove;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final title = ref.watch(streamTitleProvider(favorite.streamId));
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       padding: const EdgeInsets.all(14),
@@ -143,7 +145,7 @@ class _FavoriteTile extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(
             child: Text(
-              favorite.streamId,
+              title,
               style: Theme.of(context).textTheme.titleMedium,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
