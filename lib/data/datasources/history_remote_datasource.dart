@@ -15,4 +15,18 @@ class HistoryRemoteDataSource {
         .map((json) => HistoryModel.fromJson(json as Map<String, dynamic>))
         .toList();
   }
+
+  /// Enregistre le début d'écoute d'un stream. À appeler une fois quand la
+  /// lecture démarre (le backend n'a pas besoin d'un ping en continu).
+  Future<void> recordListen({
+    required String trackTitle,
+    required String artist,
+    required String streamId,
+  }) async {
+    await _dio.post('/history', data: {
+      'track_title': trackTitle,
+      'artist': artist,
+      'stream_id': streamId,
+    });
+  }
 }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lullify_mobile/core/constants.dart';
 import 'package:lullify_mobile/core/theme/app_colors.dart';
 import 'package:lullify_mobile/domain/entities/stream.dart';
+import 'package:lullify_mobile/presentation/providers/favorite_provider.dart';
+import 'package:lullify_mobile/presentation/providers/history_provider.dart';
 import 'package:lullify_mobile/presentation/providers/player_provider.dart';
 import 'package:lullify_mobile/presentation/providers/stream_provider.dart';
 import 'package:lullify_mobile/presentation/widgets/listener_count.dart';
@@ -18,6 +20,12 @@ class PlayerPage extends ConsumerStatefulWidget {
 }
 
 class _PlayerPageState extends ConsumerState<PlayerPage> {
+  // Passe à true dès que le lecteur signale une erreur (ex: le diffuseur a
+  // coupé le stream et le flux HLS n'est plus disponible). Le badge et les
+  // contrôles s'appuient là-dessus plutôt que sur le statut figé passé à la
+  // création de la page, qui ne bouge jamais tout seul.
+  bool _streamEnded = false;
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +37,14 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
         streamTitle: widget.stream.title,
         hlsUrl: hlsUrl,
       );
+
+      // Enregistre le début d'écoute dans l'historique. Ne bloque jamais la
+      // lecture : si ça échoue (réseau, etc.), on l'ignore silencieusement.
+      ref.read(historyRepositoryProvider).recordListen(
+        trackTitle: widget.stream.title,
+        artist: 'Lullify Radio',
+        streamId: widget.stream.id,
+      ).catchError((_) {});
     });
   }
 
@@ -37,6 +53,19 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
     final playerState = ref.watch(playerProvider);
     // compteur d'auditeurs en temps réel
     final liveListeners = ref.watch(listenerCountProvider(widget.stream.id));
+    final isFavorite = ref.watch(
+      favoriteProvider.select((state) =>
+          state is FavoriteLoaded &&
+          state.favorites.any((f) => f.streamId == widget.stream.id)),
+    );
+
+    if (playerState is PlayerError && !_streamEnded) {
+      // On évite de setState pendant le build : on le programme juste après.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _streamEnded = true);
+      });
+    }
+    final isLiveNow = widget.stream.isLive && !_streamEnded;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -56,10 +85,55 @@ class _PlayerPageState extends ConsumerState<PlayerPage> {
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     const Spacer(),
-                    LiveBadge(isLive: widget.stream.isLive),
+                    LiveBadge(isLive: isLiveNow),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      icon: Icon(
+                        isFavorite
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                      ),
+                      color: isFavorite
+                          ? AppColors.neonPink
+                          : AppColors.textPrimary,
+                      onPressed: () => ref
+                          .read(favoriteProvider.notifier)
+                          .toggle(widget.stream.id),
+                    ),
                   ],
                 ),
               ),
+
+              if (_streamEnded)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 4),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.textMuted.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.info_outline_rounded,
+                            size: 16, color: AppColors.textMuted),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Ce stream est terminé',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
               const Spacer(),
 

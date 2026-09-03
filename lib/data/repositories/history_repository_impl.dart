@@ -10,4 +10,16 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
   @override
   Future<List<HistoryEntry>> getMyHistory() => _remote.getMyHistory();
+
+  @override
+  Future<void> recordListen({
+    required String trackTitle,
+    required String artist,
+    required String streamId,
+  }) =>
+      _remote.recordListen(
+        trackTitle: trackTitle,
+        artist: artist,
+        streamId: streamId,
+      );
 }
