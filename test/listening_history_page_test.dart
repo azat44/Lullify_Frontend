@@ -13,12 +13,26 @@ class _FakeHistoryRepository implements HistoryRepository {
 
   @override
   Future<List<HistoryEntry>> getMyHistory() async => _entries;
+
+  @override
+  Future<void> recordListen({
+    required String trackTitle,
+    required String artist,
+    required String streamId,
+  }) async {}
 }
 
 class _ThrowingHistoryRepository implements HistoryRepository {
   @override
   Future<List<HistoryEntry>> getMyHistory() async =>
       throw Exception('network down');
+
+  @override
+  Future<void> recordListen({
+    required String trackTitle,
+    required String artist,
+    required String streamId,
+  }) async {}
 }
 
 Widget _wrap(HistoryRepository repo) {

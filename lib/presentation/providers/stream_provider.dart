@@ -93,3 +93,14 @@ final listenerCountProvider = Provider.family<int, String>((ref, streamId) {
   }
   return 0;
 });
+
+
+final streamTitleProvider = Provider.family<String, String>((ref, streamId) {
+  final state = ref.watch(streamListProvider);
+  if (state is StreamListLoaded) {
+    for (final s in state.streams) {
+      if (s.id == streamId) return s.title;
+    }
+  }
+  return 'Stream ${streamId.substring(0, streamId.length < 8 ? streamId.length : 8)}';
+});
