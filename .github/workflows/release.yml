@@ -1,11 +1,15 @@
 name: Release
 
+# Déclenché quand tu pushes un tag de version (ex: git tag v1.0.0 && git push origin v1.0.0)
 on:
   push:
     tags: ["v*"]
-  workflow_dispatch:
+  workflow_dispatch: # + bouton "Run workflow" manuel dans l'onglet Actions
 
 jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Android : APK + AAB signés avec le keystore de release
+  # ─────────────────────────────────────────────────────────────
   android:
     name: Build signed Android (APK + AAB)
     runs-on: ubuntu-latest
@@ -23,9 +27,11 @@ jobs:
 
       - run: flutter pub get
 
+      # Reconstitue le keystore depuis le secret base64
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
 
+      # Crée android/key.properties que build.gradle.kts va lire
       - name: Create key.properties
         run: |
           cat > android/key.properties <<EOF
@@ -36,19 +42,34 @@ jobs:
           EOF
 
       - name: Build release APK
-        run: flutter build apk --release --dart-define=API_BASE_URL=https://lullify.up.railway.app/api/v1
+        run: flutter build apk --release
 
       - name: Build release App Bundle
-        run: flutter build appbundle --release --dart-define=API_BASE_URL=https://lullify.up.railway.app/api/v1
+        run: flutter build appbundle --release
+
+      # Regroupe APK + AAB dans un seul dossier plat avant l'upload,
+      # pour que l'artifact contienne les fichiers à la racine
+      # (build apk et build appbundle écrivent dans deux dossiers
+      # différents ; sans ça, upload-artifact préserve cette
+      # arborescence et les chemins attendus par le job "release"
+      # ne correspondent plus).
+      - name: Flatten Android outputs
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/
+          cp build/app/outputs/bundle/release/app-release.aab dist/
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
           name: lullify-android
-          path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
+          path: dist/
 
+  # ─────────────────────────────────────────────────────────────
+  # iOS : archive non signée (aucun compte Apple requis)
+  # L'archive .xcarchive est un DOSSIER de milliers de fichiers :
+  # on la zippe pour n'avoir qu'un seul fichier propre à publier.
+  # ─────────────────────────────────────────────────────────────
   ios:
     name: Build iOS
     runs-on: macos-14
@@ -62,7 +83,7 @@ jobs:
       - run: flutter pub get
 
       - name: Build unsigned archive
-        run: flutter build ipa --release --no-codesign --dart-define=API_BASE_URL=https://lullify.up.railway.app/api/v1
+        run: flutter build ipa --release --no-codesign
 
       - name: Zip iOS archive
         run: |
@@ -75,6 +96,38 @@ jobs:
           name: lullify-ios-unsigned
           path: build/ios/archive/lullify-ios.xcarchive.zip
 
+      # ── Signed (décommente si tu as un compte Apple Developer) ──
+      # Secrets nécessaires :
+      #   BUILD_CERTIFICATE_BASE64      -> certificat de distribution .p12 en base64
+      #   P12_PASSWORD                  -> mot de passe du .p12
+      #   PROVISIONING_PROFILE_BASE64   -> profil de provisioning en base64
+      #   KEYCHAIN_PASSWORD             -> mot de passe temporaire du trousseau CI
+      # Il faut aussi un ios/ExportOptions.plist (teamID + method: app-store/ad-hoc).
+      #
+      # - name: Import Apple signing assets
+      #   uses: apple-actions/import-codesign-certs@v3
+      #   with:
+      #     p12-file-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+      #     p12-password: ${{ secrets.P12_PASSWORD }}
+      #
+      # - name: Install provisioning profile
+      #   run: |
+      #     mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+      #     echo "${{ secrets.PROVISIONING_PROFILE_BASE64 }}" | base64 -d \
+      #       > ~/Library/MobileDevice/Provisioning\ Profiles/lullify.mobileprovision
+      #
+      # - name: Build signed IPA
+      #   run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+      #
+      # - name: Upload signed IPA
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: lullify-ios
+      #     path: build/ios/ipa/*.ipa
+
+  # ─────────────────────────────────────────────────────────────
+  # Attache UNIQUEMENT l'APK, l'AAB et le zip iOS à la Release
+  # ─────────────────────────────────────────────────────────────
   release:
     name: Publish GitHub Release
     needs: [android, ios]
@@ -83,19 +136,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: artifacts
-          merge-multiple: true
-
-      - name: List downloaded files (debug)
-        run: find artifacts -type f
 
       - name: Create/Update Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/app-release.apk
-            artifacts/app-release.aab
-            artifacts/lullify-ios.xcarchive.zip
+            artifacts/lullify-android/app-release.apk
+            artifacts/lullify-android/app-release.aab
+            artifacts/lullify-ios-unsigned/lullify-ios.xcarchive.zip
